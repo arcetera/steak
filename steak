@@ -1,9 +1,10 @@
 #!/bin/bash
 
 ################################################################################
-# MEAT!!!! simple fast AUR helper, using cower as a back end                   #
+# steak: quick bash aur helper, based on meat, cower backend                   #
 ################################################################################
-# Copyright Daniel Mills <dm@e36freak.com>                                     #
+# Copyright Abraham Levine <echo arc.plusreed.com | sed 's/\@/./'>             #
+# Fork of 'meat', Copyright Daniel Mills <dm@e36freak.com>                     #
 # Wraps 'cower', Copyright Dave Reisner <d@falconindy.com>                     #
 #                                                                              #
 # Permission is hereby granted, free of charge, to any person obtaining a copy #
@@ -29,6 +30,7 @@
 #                sudo (highly recommended)                                     #
 ################################################################################
 # TODO:                                                                        #
+#       add -o option (download only, like cower -d)                           #
 #       better function comments/usage descriptions                            #
 #       find a better way to handle .install files?                            #
 #       write documentation                                                    #
@@ -47,12 +49,12 @@
 shopt -s extglob dotglob globstar nullglob
 
 ### files
-config_dir=${XDG_CONFIG_HOME:-$HOME/.config}/meat # dir for config file
-config_file=$config_dir/config                    # config file itself
-default_config=/usr/share/meat/config             # default/sample config file
-cache_dir=${XDG_CACHE_HOME:-$HOME/.cache}/meat    # cache dir
-git_sums_file=$cache_dir/gitsums                  # git checksums file
-lock_file=$cache_dir/meat.lck                     # lock file
+config_dir=${XDG_CONFIG_HOME:-$HOME/.config}/steak # dir for config file
+config_file=$config_dir/config                     # config file itself
+default_config=/usr/share/steak/config             # default/sample config file
+cache_dir=${XDG_CACHE_HOME:-$HOME/.cache}/steak    # cache dir
+git_sums_file=$cache_dir/gitsums                   # git checksums file
+lock_file=$cache_dir/steak.lck                     # lock file
 
 ### default values
 gitcheck=1                      # boolean, '1' to check git for updates
@@ -85,6 +87,8 @@ full_update=0        # boolean, set for hidden --fullupdate operation
 git_db_update=0      # boolean, set for --git-db-update
 info_level=0         # integer, for how many '-i's to pass to cower
                        # also used for checking for --info
+onlydl_level=0       # integer, for how many '-d's to pass to cower
+                       # also used for checking for --dl
 msearch=0            # boolean, set for --msearch
 op_declared=0        # boolean, if 1 an option has been specified
 search=0             # boolean, set for --search
@@ -118,6 +122,26 @@ pkg=                        # used when parsing options
 
 ################################################################################
 ### Functions
+
+## download AUR packages
+aur_download() {
+        # I'm sorry.
+        local pkg newsum toinst pkgs pkgext
+
+        if ! hide 4 pushd "$download_dir"; then
+                die "could not cd to \`$download_dir'"
+        fi
+
+        for pkg; do
+                if ! hide 4 pushd "$pkg"; then
+                        err "error while changing to dir \`$pkg'"
+                        continue
+                fi
+
+                checkfiles "$pkg"
+        done
+        hide 4 popd
+}
 
 ## build and install AUR packages
 # usage: aur_install TARGET_DIR TARGET [...]
@@ -207,13 +231,13 @@ checkfiles() {
 
   ## allow user to edit PKGBUILD and $install
   if confirm "Edit PKGBUILD for \`$pkg'?";then
-    ${EDITOR:-vi} PKGBUILD
+    ${EDITOR:-nano:-vi} PKGBUILD
   fi
 
   # source PKGBUILD for $install, prompt if exists
   source PKGBUILD
   if [[ $install ]] && confirm "Edit \`$install'?";then
-    ${EDITOR:-vi} "$install"
+    ${EDITOR:-nano:-vi} "$install"
   fi
 
   # allow for checking every other regular file
@@ -221,7 +245,7 @@ checkfiles() {
     for file in ./**/!(PKGBUILD|"$install"); do
       if [[ -f $file && -w $file && $(file "$file") = *text ]] &&
          confirm "Edit \`$file'?";then
-        ${EDITOR:-vi} "$file"
+        ${EDITOR:-nano:-vi} "$file"
       fi
     done
   fi

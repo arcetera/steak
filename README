@@ -1,5 +1,5 @@
-Usage: meat OPERATION [OPTIONS] [TARGET [...]]
-  A simple, fast AUR helper written in bash using cower as a back end
+Usage: steak OPERATION [OPTIONS] [TARGET [...]]
+  a quick AUR helper written in pure bash, fork of meat, with a cower backend
 
  Operations:
   -h, --help              Display this help and exit
@@ -13,6 +13,8 @@ Usage: meat OPERATION [OPTIONS] [TARGET [...]]
   -u, --update            Check for updates against AUR and install them
   -U, --listupdates       Check for updates against AUR and print them -- acts
                           the same way as cower -u
+  -o, --dl                Only download the package from the AUR -- acts the same
+                          way as cower -d -- pass twice to download dependencies
 
   Only one operation may be specified.
 
@@ -50,17 +52,17 @@ Usage: meat OPERATION [OPTIONS] [TARGET [...]]
                           more information
 
  Targets:
-  Meat accepts a list of targets, space separated. If any target is the single
+  steak accepts a list of targets, space separated. If any target is the single
   character '-', it will also read a list of packages from stdin, one per line.
 
 
  Config:
-  Meat honors a config file which will be looked for first at:
-    $XDG_CONFIG_HOME/meat/config
+  steak honors a config file which will be looked for first at:
+    $XDG_CONFIG_HOME/steak/config
   And falls back to:
-    $HOME/.config/meat/config
+    $HOME/.config/steak/config
 
-  A default documented example can be found at /usr/share/meat/config. If a
+  A default documented example can be found at /usr/share/steak/config. If a
   config file does not exist in the above locations when meat runs, the default
   will be copied to the correct location.
 
@@ -72,9 +74,10 @@ Usage: meat OPERATION [OPTIONS] [TARGET [...]]
   cower(1), pacman(8)
 
  Author:
-  Copyright Daniel Mills <dm@e36freak.com>
+  Copyright Abraham Levine <echo arc.plusreed.com | sed 's/\@/./'>
+  Fork of 'meat', Copyright Daniel Mills <dm@e36freak.com>
   Wraps 'cower', Copyright Dave Reisner <d@falconindy.com>
   Licensing information can be found in the source code
 
  Bugs:
-  Please report any bugs on Github <https://github.com/e36freak/meat>
+  Please report any bugs on Github <https://github.com/arcetera/steak>
