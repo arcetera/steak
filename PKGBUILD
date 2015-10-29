@@ -1,18 +1,18 @@
-# Contributor: Daniel Mills <dm@e36freak.com>
+# Maintainer: Abraham Levine <echo arc.plusreed.com | sed 's/\@/./'>
 
-pkgname=meat-git
-pkgver=93.af634b3
+pkgname=steak-git
+pkgver=0.1
 pkgrel=1
-pkgdesc="A simple fast AUR helper, using cower as a back end"
+pkgdesc="a quick AUR helper written in pure bash, fork of meat, cower backend"
 arch=('i686' 'x86_64')
-url="http://github.com/e36freak/meat"
+url="http://github.com/arcetera/steak"
 license=('MIT')
 depends=('bash>=4.0' 'cower' 'awk')
 makedepends=('git')
 optdepends=('sudo: highly recommended')
-source=('git://github.com/e36freak/meat.git')
+source=('git://github.com/arcetera/steak.git')
 md5sums=('SKIP')
-_gitname='meat'
+_gitname='steak'
 
 pkgver() {
   cd "$_gitname" &&
@@ -22,8 +22,8 @@ pkgver() {
 
 package() {
   cd "$_gitname" &&
-  install -m 755 -D meat "$pkgdir/usr/bin/meat" &&
-  install -m 644 -D config "$pkgdir/usr/share/meat/config"
+  install -m 755 -D steak "$pkgdir/usr/bin/steak" &&
+  install -m 644 -D config "$pkgdir/usr/share/steak/config"
 }
 
 # vim: ft=sh syn=sh et

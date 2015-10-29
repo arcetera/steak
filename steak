@@ -30,7 +30,7 @@
 #                sudo (highly recommended)                                     #
 ################################################################################
 # TODO:                                                                        #
-#       add -o option (download only, like cower -d)                           #
+#       make download path configurable                                        #
 #       better function comments/usage descriptions                            #
 #       find a better way to handle .install files?                            #
 #       write documentation                                                    #
@@ -122,26 +122,6 @@ pkg=                        # used when parsing options
 
 ################################################################################
 ### Functions
-
-## download AUR packages
-aur_download() {
-        # I'm sorry.
-        local pkg newsum toinst pkgs pkgext
-
-        if ! hide 4 pushd "$download_dir"; then
-                die "could not cd to \`$download_dir'"
-        fi
-
-        for pkg; do
-                if ! hide 4 pushd "$pkg"; then
-                        err "error while changing to dir \`$pkg'"
-                        continue
-                fi
-
-                checkfiles "$pkg"
-        done
-        hide 4 popd
-}
 
 ## build and install AUR packages
 # usage: aur_install TARGET_DIR TARGET [...]
@@ -270,29 +250,7 @@ confirm() {
     exec </dev/tty
   fi
 
-  # actually print the prompt, return according to response
-  read -p "$bold$msg$reset [Y/n] " reply >/dev/tty
-  [[ -z $reply || $reply = y?(es) ]]
-}
-
-## print error message, exit
-# usage: die MESSAGE [...]
-die() { 
-  if ((iscolor[1])); then
-    printf "$red%s:$reset" "error"
-  else
-    printf "$bold%s:$reset" "error"
-  fi
-  printf "\t %s\n" "$@"
-  exit 1
-} >&2
-
-## download packages, parse cower output for dependency info
-# usage: download TARGET [...]
-download() {
-  local flag pkg info
-
-  info 1 'Cower is downloading packages...'
+  info 1 'Downloading packages...'
 
   # parse cower output, add to stacks
   while read -r flag pkg info; do
@@ -797,7 +755,7 @@ fi
 ## parse options
 # option string for splitting short options, any letter followed by a ':' takes
 # a required argument
-optstring=hdGimsuUfgt:cqv
+optstring=hdGimsuUfgto:cqv
 
 # iterate over options, breaking -ab into -a -b. also turns -- into --endopts to
 # avoid issues with things like '-o-', the '-' should not indicate the end of
@@ -851,6 +809,7 @@ while [[ $1 = -?* ]]; do
     -u|--update) ((op_declared++)); update=1;;
     -U|--listupdates) ((op_declared++)); list_updates=1;;
     -G|--git-db-update) ((op_declared++)); git_db_update=1;;
+    -o|--dl) ((op_declared++)); onlydl=1;;
     --fullupdate) ((op_declared++)); full_update=1;;
 
     # options
@@ -1110,6 +1069,27 @@ fi
 ### lock file handling
 {
 if ! flock -n 9; then
+  die "only one instance of steak may be running at a time." \
+      "if you are sure that another instance isn't running," \
+cower+='(-t '$download_dir')'
+
+# packages to ignore
+set_ignore_arrays
+
+### files and directories
+# make sure download dir exists
+if ! mkdir -p "$download_dir"; then
+  die "download dir \`$download_dir' can't be created" \
+      "check permissions"
+fi
+# create git sums file, if not existing
+if ! touch "$git_sums_file"; then
+  die "\`$git_sums_file' does not exist and could not be created"
+fi
+
+### lock file handling
+{
+if ! flock -n 9; then
   die "only one instance of meat may be running at a time." \
       "if you are sure that another instance isn't running," \
       "remove \`$lock_file'"
@@ -1172,10 +1152,11 @@ elif ((full_update)); then
   upgrade
   install_all
 
+elif ((onlydl)); then
+  "${cower[@]}" -t $HOME/steakdl -dd "${targets[@]}"
+
 # ZOMG
 else
   die "this should never been seen, report a bug"
 fi
 } 9>"$lock_file"
-
-# vim: set ts=2 et

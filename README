@@ -14,7 +14,7 @@ Usage: steak OPERATION [OPTIONS] [TARGET [...]]
   -U, --listupdates       Check for updates against AUR and print them -- acts
                           the same way as cower -u
   -o, --dl                Only download the package from the AUR -- acts the same
-                          way as cower -d -- pass twice to download dependencies
+                          way as cower -d
 
   Only one operation may be specified.
 
